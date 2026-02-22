@@ -1,14 +1,17 @@
 public virtual class TriggerHandler {
 
+  @TestVisible
+  private static final String TRIGGER_CONTEXT_ERROR = 'Trigger handler called outside of Trigger execution';
+
   // static map of handlername, times run() was invoked
   private static Map<String, LoopCount> loopCountMap;
   private static Set<String> bypassedHandlers;
 
-  // the current context of the trigger, overridable in tests
+  // the current operation of the trigger, overridable in tests
   @TestVisible
-  private TriggerOperation context;
+  private TriggerOperation operation;
 
-  // the current context of the trigger, overridable in tests
+  // the current operation of the trigger, overridable in tests
   @TestVisible
   private Boolean isTriggerExecuting;
 
@@ -20,7 +23,7 @@ public virtual class TriggerHandler {
   
   // constructor
   public TriggerHandler() {
-    this.setTriggerContext();
+    this.setTriggerOperation();
   }
 
   /***************************************
@@ -37,7 +40,7 @@ public virtual class TriggerHandler {
     addToLoopCount();
 
     // dispatch to the correct handler method
-    switch on this.context {
+    switch on this.operation {
       when BEFORE_INSERT {
         this.beforeInsert();
       }
@@ -100,29 +103,15 @@ public virtual class TriggerHandler {
    ***************************************/
 
   @TestVisible
-  private void setTriggerContext() {
-    this.setTriggerContext(null, false);
+  private void setTriggerOperation() {
+    this.setTriggerOperation(null, false);
   }
 
   @TestVisible
-  private void setTriggerContext(String ctx, Boolean testMode) {
+  private void setTriggerOperation(TriggerOperation op, Boolean testMode) {
 
-    //Initialize values
     this.isTriggerExecuting = testMode || Trigger.isExecuting;
-    this.context = (testMode) ? this.context : Trigger.operationType;
-    
-    //Proceed only when running in test mode and a context (ctx) is provided.
-    if( !testMode || String.isBlank(ctx)){ return; }
-
-    switch on ctx {
-      when 'before insert' { this.context = TriggerOperation.BEFORE_INSERT; }
-      when 'before update' { this.context = TriggerOperation.BEFORE_UPDATE; }
-      when 'before delete' { this.context = TriggerOperation.BEFORE_DELETE;}
-      when 'after insert' { this.context = TriggerOperation.AFTER_INSERT;}
-      when 'after update' { this.context = TriggerOperation.AFTER_UPDATE;}
-      when 'after delete' { this.context = TriggerOperation.AFTER_DELETE; }
-      when 'after undelete' { this.context = TriggerOperation.AFTER_UNDELETE;}
-    }
+    this.operation = (Trigger.isExecuting) ? Trigger.operationType : ( String.isBlank(ctx) ? op : this.operation );
 
   }
 
@@ -142,8 +131,8 @@ public virtual class TriggerHandler {
   // make sure this trigger should continue to run
   @TestVisible
   private Boolean validateRun() {
-    if(!this.isTriggerExecuting || this.context == null) {
-      throw new TriggerHandlerException('Trigger handler called outside of Trigger execution');
+    if(!this.isTriggerExecuting || this.operation == null) {
+      throw new TriggerHandlerException(TRIGGER_CONTEXT_ERROR);
     }
     return !TriggerHandler.bypassedHandlers.contains(getHandlerName());
   }
@@ -154,10 +143,10 @@ public virtual class TriggerHandler {
   }
 
   /***************************************
-   * context methods
+   * operation methods
    ***************************************/
 
-  // context-specific methods for override
+  // operation-specific methods for override
   @TestVisible
   protected virtual void beforeInsert(){}
   @TestVisible

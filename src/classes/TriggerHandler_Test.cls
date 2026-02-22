@@ -1,8 +1,6 @@
 @isTest
 private class TriggerHandler_Test {
 
-  private static final String TRIGGER_CONTEXT_ERROR = 'Trigger handler called outside of Trigger execution';
-
   private static String lastMethodCalled;
 
   private static TriggerHandler_Test.TestHandler handler;
@@ -17,7 +15,7 @@ private class TriggerHandler_Test {
    * unit tests
    ***************************************/
 
-  // contexts tests
+  // Operations tests
 
   @isTest
   static void testBeforeInsert() {
@@ -69,12 +67,12 @@ private class TriggerHandler_Test {
   }
 
   @isTest 
-  static void testNonTriggerContext() {
+  static void testNonTriggerOperation() {
     try{
       handler.run();
       System.assert(false, 'the handler ran but should have thrown');
     } catch(TriggerHandler.TriggerHandlerException te) {
-      System.assertEquals(TRIGGER_CONTEXT_ERROR, te.getMessage(), 'the exception message should match');
+      System.assertEquals(TriggerHandler.TRIGGER_CONTEXT_ERROR, te.getMessage(), 'the exception message should match');
     } catch(Exception e) {
       System.assert(false, 'the exception thrown was not expected: ' + e.getTypeName() + ': ' + e.getMessage());
     }
@@ -213,31 +211,31 @@ private class TriggerHandler_Test {
   // modes for testing
 
   private static void beforeInsertMode() {
-    handler.setTriggerContext('before insert', true);
+    handler.setTriggerOperation(TriggerOperation.BEFORE_INSERT, true);
   }
 
   private static void beforeUpdateMode() {
-    handler.setTriggerContext('before update', true);
+    handler.setTriggerOperation(TriggerOperation.BEFORE_UPDATE, true);
   }
 
   private static void beforeDeleteMode() {
-    handler.setTriggerContext('before delete', true);
+    handler.setTriggerOperation(TriggerOperation.BEFORE_DELETE, true);
   }
 
   private static void afterInsertMode() {
-    handler.setTriggerContext('after insert', true);
+    handler.setTriggerOperation(TriggerOperation.AFTER_INSERT, true);
   }
 
   private static void afterUpdateMode() {
-    handler.setTriggerContext('after update', true);
+    handler.setTriggerOperation(TriggerOperation.AFTER_UPDATE, true);
   }
 
   private static void afterDeleteMode() {
-    handler.setTriggerContext('after delete', true);
+    handler.setTriggerOperation(TriggerOperation.AFTER_DELETE, true);
   }
 
   private static void afterUndeleteMode() {
-    handler.setTriggerContext('after undelete', true);
+    handler.setTriggerOperation(TriggerOperation.AFTER_UNDELETE, true);
   }
 
   // test implementation of the TriggerHandler
