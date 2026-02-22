@@ -110,7 +110,8 @@ public virtual class TriggerHandler {
     //Initialize values
     this.isTriggerExecuting = testMode || Trigger.isExecuting;
     this.context = (testMode) ? this.context : Trigger.operationType;
-    //proceed only if running in tset mode with ctx specified
+    
+    //Proceed only when running in test mode and a context (ctx) is provided.
     if( !testMode || String.isBlank(ctx)){ return; }
 
     switch on ctx {
